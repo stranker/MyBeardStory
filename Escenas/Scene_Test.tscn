@@ -10,7 +10,6 @@ extents = Vector2( 613.888, 25.0961 )
 
 [node name="Scene_Test" type="Node2D"]
 
-editor/display_folded = true
 transform/pos = Vector2( 582.639, 461.649 )
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]

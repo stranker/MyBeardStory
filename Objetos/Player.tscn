@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=1]
+[gd_scene load_steps=6 format=1]
 
 [ext_resource path="res://icon.png" type="Texture" id=1]
 
@@ -9,11 +9,13 @@ radius = 32.0037
 
 [sub_resource type="GDScript" id=2]
 
+resource/name = "Player.gd"
 script/source = "extends KinematicBody2D
 
-const GRAVITY = 900
-var walk_velocity = 250
-var velocity = Vector2()
+const GRAVEDAD = 900
+var vel_caminar = 250
+var vec_velocidad = Vector2()
+var armas = []
 
 func _ready():
 	set_fixed_process(true)
@@ -21,25 +23,47 @@ func _ready():
 	pass
 
 func _fixed_process(delta):
-	velocity.y += GRAVITY * delta
+	vec_velocidad.y += GRAVEDAD * delta
 	if Input.is_action_pressed(\"ui_right\"):
-		velocity.x = walk_velocity
+		vec_velocidad.x = vel_caminar
 	elif Input.is_action_pressed(\"ui_left\"):
-		velocity.x = -walk_velocity
+		vec_velocidad.x = -vel_caminar
 	else:
-		velocity.x = 0
-	var motion = velocity * delta
+		vec_velocidad.x = 0
+	var motion = vec_velocidad * delta
 	motion = move(motion)
 	if (is_colliding()):
 		var normal = get_collision_normal()
 		motion = normal.slide(motion)
-		velocity = normal.slide(velocity)
+		vec_velocidad = normal.slide(vec_velocidad)
 		move(motion)
 	pass
 
 func _input(event):
 	if(event.is_action(\"ui_up\") and event.is_pressed() and !event.is_echo()):
-		velocity.y = -500"
+		vec_velocidad.y = -500
+
+func _on_AreaPick_area_enter( area ):
+	if area.is_in_group(\"arma\"):
+		armas.append(area)
+	pass # replace with function body
+
+
+func _on_AreaPick_area_exit( area ):
+	if area.is_in_group(\"arma\"):
+		armas.remove(area)
+	pass # replace with function body
+"
+
+[sub_resource type="RectangleShape2D" id=3]
+
+custom_solver_bias = 0.0
+extents = Vector2( 10, 10 )
+
+[sub_resource type="RectangleShape2D" id=4]
+
+custom_solver_bias = 0.0
+extents = Vector2( 10, 10 )
 
 [node name="Player" type="KinematicBody2D"]
 
@@ -61,5 +85,49 @@ texture = ExtResource( 1 )
 shape = SubResource( 1 )
 trigger = false
 _update_shape_index = 0
+
+[node name="AreaMelee" type="Area2D" parent="."]
+
+editor/display_folded = true
+input/pickable = true
+shapes/0/shape = SubResource( 3 )
+shapes/0/transform = Matrix32( 4.26919, 0, 0, 4.91946, 76.4757, -3.32026 )
+shapes/0/trigger = false
+gravity_vec = Vector2( 0, 1 )
+gravity = 98.0
+linear_damp = 0.1
+angular_damp = 1.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AreaMelee"]
+
+transform/pos = Vector2( 76.4757, -3.32026 )
+transform/scale = Vector2( 4.26919, 4.91946 )
+shape = SubResource( 3 )
+trigger = false
+_update_shape_index = 0
+
+[node name="AreaPick" type="Area2D" parent="."]
+
+editor/display_folded = true
+input/pickable = true
+shapes/0/shape = SubResource( 4 )
+shapes/0/transform = Matrix32( 7.8845, 0, 0, 2.09233, -0.0456734, 25.2764 )
+shapes/0/trigger = false
+gravity_vec = Vector2( 0, 1 )
+gravity = 98.0
+linear_damp = 0.1
+angular_damp = 1.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AreaPick"]
+
+transform/pos = Vector2( -0.0456734, 25.2764 )
+transform/scale = Vector2( 7.8845, 2.09233 )
+shape = SubResource( 4 )
+trigger = false
+_update_shape_index = 0
+
+[connection signal="area_enter" from="AreaPick" to="." method="_on_AreaPick_area_enter"]
+
+[connection signal="area_exit" from="AreaPick" to="." method="_on_AreaPick_area_exit"]
 
 
